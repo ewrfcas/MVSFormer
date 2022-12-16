@@ -1,0 +1,120 @@
+{
+    "name": "MVSFormer",
+    "n_gpu": 2,
+    "fp16": true,
+    "arch": {
+        "args": {
+            "fix": false,
+            "depth_type": "ce",
+            "mask_out_range": false,
+            "focal": false,
+            "gamma": 2.0,
+            "fusion_type": "cnn",
+            "inverse_depth": true,
+            "attn_temp": 2.0,
+            "base_ch": 8,
+            "ndepths": [32,16,8,4],
+            "feat_chs": [8,16,32,64],
+            "depth_interals_ratio": [4.0,2.67,1.5,1.0],
+            "multi_scale": false,
+            "vit_args": {
+                "twin": true,
+                "rescale": 0.5,
+                "do_vit": true,
+                "patch_size": 16,
+                "qk_scale": "default",
+                "vit_arch": "alt_gvt_small",
+                "vit_path": "./pretrained_weights/alt_gvt_small.pth",
+                "vit_ch": [64,128,256,512],
+                "out_ch": 64,
+                "att_fusion": true,
+                "nhead": 6
+            }
+        }
+    },
+    "data_loader": [
+        {
+            "type": "DTULoader",
+            "args": {
+                "data_set_type": "multi_scale",
+                "datapath": "/home/DTU",
+                "train_data_list": "lists/dtu/train.txt",
+                "val_data_list": "lists/dtu/test.txt",
+                "random_mask": false,
+                "mask_path": "/home/wmlce/DTU_MVSNet/DTU_aug_masks/irregular_mask*",
+                "mask_rate": 0.25,
+                "mask_type_rates": [0.25,0.5],
+                "mode": "train",
+                "nviews": 5,
+                "num_depths": 192,
+                "multi_scale": true,
+                "multi_scale_args": {
+                    "scales":  [[512,640],[512,704],[512,768],
+                        [576,704],[576,768],[576,832],
+                        [640,832],[640,896],[640,960],
+                        [704,896],[704,960],[704,1024],
+                        [768,960],[768,1024],[768,1088],
+                        [832,1024],[832,1088],[832,1152],
+                        [896,1152],[896,1216],[896,1280],
+                        [960,1216],[960,1280],[960,1344],
+                        [1024,1280]],
+                    "resize_range": [1.0,1.2],
+                    "scale_batch_map": {
+                        "512": 4,
+                        "576": 4,
+                        "640": 4,
+                        "704": 2,
+                        "768": 2,
+                        "832": 2,
+                        "896": 1,
+                        "960": 1,
+                        "1024": 1
+                    }
+                },
+                "interval_scale": 1.06,
+                "resize_scale": 0.5,
+                "height": 512,
+                "width": 640,
+                "shuffle": true,
+                "seq_size": 7,
+                "batch_size": 8,
+                "crop": true,
+                "consist_crop": false,
+                "num_workers": 4,
+                "augment": true,
+                "aug_args": {
+                    "brightness": 0.2,
+                    "contrast": 0.1,
+                    "saturation": 0.1,
+                    "hue": 0.05,
+                    "min_gamma": 0.9,
+                    "max_gamma": 1.1
+                }
+            }
+        }
+    ],
+    "optimizer": {
+        "args": {
+            "vit_lr": 3.0e-5,
+            "lr": 1.0e-3,
+            "weight_decay": 0.01,
+            "layer_decay": 0.75,
+            "min_lr": 0.01,
+            "warmup_steps": 500
+        }
+    },
+    "trainer": {
+        "epochs": 15,
+        "seq": true,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "verbosity": 2,
+        "logging_every": 100,
+        "early_stop": 10,
+        "tensorboard": false,
+        "depth_scale": 1.0,
+        "eval_freq": 1,
+        "monitor": "min mean_error"
+    }
+}
+

@@ -135,3 +135,4 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --use_short_range --combine_conf --tmps 5.0,5.0,5.0,1.0
 ```
 
+Our codes are partially based on [CDS-MVSNet](https://github.com/TruongKhang/cds-mvsnet).

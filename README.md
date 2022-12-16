@@ -132,6 +132,6 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --interval_scale 1.0 --num_view 20 --numdepth 256 \
                                       --max_h 1088 --max_w 1920 --filter_method dpcd \
                                       --prob_threshold 0.5,0.5,0.5,0.5
-                                      --use_short_range --combine_conf --tmps 5.0,5.0,5.,1.0
+                                      --use_short_range --combine_conf --tmps 5.0,5.0,5.0,1.0
 ```
 

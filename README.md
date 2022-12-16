@@ -4,7 +4,7 @@ Codes of MVSFormer: Multi-View Stereo by Learning Robust Image Features and Temp
 [arxiv paper](https://arxiv.org/abs/2208.02541)
 
 - [x] Releasing codes of training and testing
-- [ ] Adding dynamic pointcloud fusion for T&T
+- [x] Adding dynamic pointcloud fusion for T&T
 - [ ] Releasing pre-trained models
 
 ## Installation

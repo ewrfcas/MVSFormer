@@ -110,3 +110,56 @@ def vis_filter(ref_depth, reproj_xyd, in_range, img_dist_thresh, depth_thresh, v
 def ave_fusion(ref_depth, reproj_xyd, masks):
     ave = ((reproj_xyd[:, :, 2:, :, :] * masks).sum(dim=1) + ref_depth) / (masks.sum(dim=1) + 1)  # n1hw
     return ave
+
+def get_reproj_dynamic(ref_depth, srcs_depth, ref_cam, srcs_cam):  # n1hw, nv1hw -> n1hw
+    n, v, _, h, w = srcs_depth.size()
+    srcs_depth_f = srcs_depth.view(n * v, 1, h, w)
+    srcs_cam_f = srcs_cam.view(n * v, 2, 4, 4)
+    ref_cam_r = ref_cam.unsqueeze(1).repeat(1, v, 1, 1, 1).view(n * v, 2, 4, 4)
+    ref_depth_f = ref_depth.unsqueeze(1).repeat(1, v, 1, 1, 1).view(n * v, 1, h, w)
+    idx_img = get_pixel_grids(h, w).unsqueeze(0)  # 1hw31  # [1,h,w,3,1]
+
+    ref_idx_cam = idx_img2cam(idx_img, ref_depth_f, ref_cam_r)  # Nhw41     k^-1  [x,y,1] * d
+    ref_idx_world = idx_cam2world(ref_idx_cam, ref_cam_r)  # Nhw41       (R-1)  k^-1  [x,y,1] * d  / [:,:,-1]
+    ref2src_idx_cam = idx_world2cam(ref_idx_world,
+                                     srcs_cam_f)  # Nhw41   R*  [(R-1)  k^-1  [x,y,1] * d  / [:,:,-1] ]  / [:,:,-1]
+    ref2src_idx_img = idx_cam2img(ref2src_idx_cam,
+                                   srcs_cam_f)  # Nhw31   K * R*  [(R-1)  k^-1  [x,y,1] * d  / [:,:,-1] ]  / [:,:,-1]
+
+
+    warp_coord = ref2src_idx_img[..., :2, 0]  # nhw2
+    proj_x_normalized = warp_coord[...,0] / ((w-1)/2) - 1
+    proj_y_normalized = warp_coord[...,1] /((h-1)/2) -1
+  
+    proj_xy = torch.stack((proj_x_normalized, proj_y_normalized), dim=-1)  # [n,h,w,2]
+
+    warped_src_depth = F.grid_sample(srcs_depth_f, proj_xy, mode='bilinear', padding_mode='zeros', align_corners=True)
+
+    warp_homo_coord = torch.cat([warp_coord, torch.ones_like(warp_coord[...,-1:])],dim=-1).unsqueeze(-1) # [n,h,w,3]
+
+    src_idx_cam = idx_img2cam(warp_homo_coord, warped_src_depth, srcs_cam_f)  # Nhw41     k^-1  [x,y,1] * d
+
+    src_idx_world = idx_cam2world(src_idx_cam, srcs_cam_f)  # Nhw41
+    src2ref_idx_cam = idx_world2cam(src_idx_world, ref_cam_r) # Nhw41
+    reproj_depth = src2ref_idx_cam[:,:,:,2,0].clone()    #  # n h w
+    src2ref_idx_corrd = idx_cam2img(src2ref_idx_cam, ref_cam_r) # Nhw31
+
+    # bn  3 h w
+    reproj_xyd_f = torch.cat([src2ref_idx_corrd[...,:2,0], reproj_depth.unsqueeze(-1)],dim=-1).permute(0,3,1,2)
+    reproj_xyd = reproj_xyd_f.reshape(n,v,3,h,w)
+    return reproj_xyd
+
+
+def vis_filter_dynamic(ref_depth, reproj_xyd, dist_base=4, rel_diff_base=1300):
+    device = reproj_xyd.device
+    n, v, _, h, w = reproj_xyd.size()
+    xy = get_pixel_grids(h, w).permute(3, 2, 0, 1).unsqueeze(1)[:, :, :2]  # 112hw
+    corrd_diff = (reproj_xyd[:, :, :2, :, :] - xy).norm(dim=2, keepdim=True) # nv1hw
+    depth_diff = (ref_depth.unsqueeze(1) - reproj_xyd[:, :, 2:, :, :]).abs()  / ref_depth.unsqueeze(1) # nv1hw
+
+    dist_thred = torch.arange(2,v+1).reshape(1,1,-1,1,1).repeat(n,v,1,1,1).to(device) / dist_base
+    relative_dist_thred = torch.arange(2,v+1).reshape(1,1,-1,1,1).repeat(n,v,1,1,1).to(device) / rel_diff_base
+    masks = torch.min(corrd_diff<dist_thred, depth_diff < relative_dist_thred) # [n,v,v-1, h,w]
+    mask = masks[:,:,-1:,:,:] # [n,v,1,h,w]
+
+    return masks, mask

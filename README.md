@@ -78,7 +78,9 @@ tankandtemples
 
 ## Training
 
-Training MVSFormer (Twins-based) on DTU with 2 32GB V100 GPUs cost 2 days.
+Training MVSFormer (Twins-based) on DTU with 2 32GB V100 GPUs cost 2 days. 
+We set the max epoch=15 in DTU, but it could achieve the best one in epoch=10 in our implementation.
+You are free to adjust the max epoch, but the learning rate decay may be influenced.
 ```
 CUDA_VISIBLE_DEVICES=0,1 python train.py --config configs/config_mvsformer.json \
                                          --exp_name MVSFormer \

@@ -80,9 +80,9 @@ tankandtemples
 
 ### Pretrained weights
 
-[DINO-small](https://github.com/facebookresearch/dino): [Weight](https://dl.fbaipublicfiles.com/dino/dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth)
+DINO-small (https://github.com/facebookresearch/dino): [Weight Link](https://dl.fbaipublicfiles.com/dino/dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth)
 
-[Twins-small](https://github.com/Meituan-AutoML/Twins): [Weight](https://drive.google.com/file/d/131SVOphM_-SaBytf4kWjo3ony5hpOt4S/view?usp=sharing)
+Twins-small (https://github.com/Meituan-AutoML/Twins): [Weight Link](https://drive.google.com/file/d/131SVOphM_-SaBytf4kWjo3ony5hpOt4S/view?usp=sharing)
 
 Training MVSFormer (Twins-based) on DTU with 2 32GB V100 GPUs cost 2 days. 
 We set the max epoch=15 in DTU, but it could achieve the best one in epoch=10 in our implementation.
@@ -143,4 +143,4 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --use_short_range --combine_conf --tmps 5.0,5.0,5.0,1.0
 ```
 
-Our codes are partially based on [CDS-MVSNet](https://github.com/TruongKhang/cds-mvsnet).
+Our codes are partially based on [CDS-MVSNet](https://github.com/TruongKhang/cds-mvsnet), [DINO](https://github.com/facebookresearch/dino), and [Twins](https://github.com/Meituan-AutoML/Twins).

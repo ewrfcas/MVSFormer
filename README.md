@@ -78,6 +78,12 @@ tankandtemples
 
 ## Training
 
+### Pretrained weights
+
+[DINO-small](https://github.com/facebookresearch/dino): [Weight](https://dl.fbaipublicfiles.com/dino/dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth)
+
+[Twins-small](https://github.com/Meituan-AutoML/Twins): [Weight](https://drive.google.com/file/d/131SVOphM_-SaBytf4kWjo3ony5hpOt4S/view?usp=sharing)
+
 Training MVSFormer (Twins-based) on DTU with 2 32GB V100 GPUs cost 2 days. 
 We set the max epoch=15 in DTU, but it could achieve the best one in epoch=10 in our implementation.
 You are free to adjust the max epoch, but the learning rate decay may be influenced.

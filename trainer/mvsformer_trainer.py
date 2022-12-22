@@ -267,38 +267,40 @@ class Trainer(BaseTrainer):
                     scalar_outputs = tensor2float(scalar_outputs)
                     image_outputs = {"pred_depth": outputs['refined_depth'] * mask, "gt_depth": depth_gt, "ref_img": imgs[:, 0]}
 
-                    images_dict = tensor2numpy(image_outputs)
-                    std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))
-                    mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))
-                    images_dict['ref_img'][0] = images_dict['ref_img'][0] * std + mean
-                    ref_img = cv2.resize(np.transpose(images_dict['ref_img'][0], axes=[1, 2, 0]), (320, 256))
-                    out_imgs = [ref_img]
-                    max_v, min_v = depth_values[0, -1].item(), depth_values[0, 0].item()
-                    img_pred_depth = cv2.resize(normalize(images_dict['pred_depth'][0], max=max_v, min=min_v), (320, 256))
-                    img_pred_depth = np.tile(img_pred_depth[:, :, None], [1, 1, 3])
-                    img_gt_depth = cv2.resize(normalize(images_dict['gt_depth'][0], max=max_v, min=min_v), (320, 256))
-                    img_gt_depth = np.tile(img_gt_depth[:, :, None], [1, 1, 3])
-                    out_imgs.extend([img_pred_depth, img_gt_depth])
-
-                    stage_outputs = {}
-                    for key in outputs:
-                        if 'stage' in key:
-                            stage_outputs['depth_' + key] = outputs[key]['depth']
-                    stage_dict = tensor2numpy(stage_outputs)
-                    ex_depths = []
-                    for stage_key in stage_dict:
-                        img_pred_depth_ = cv2.resize(normalize(stage_dict[stage_key][0], max=max_v, min=min_v), (320, 256))
-                        img_pred_depth_ = np.tile(img_pred_depth_[:, :, None], [1, 1, 3])
-                        ex_depths.append(img_pred_depth_)
-                    out_imgs.extend(ex_depths)
-
-                    out_imgs = np.concatenate(out_imgs, axis=1)
-                    out_imgs = (out_imgs * 255).astype(np.uint8)
-                    cv2.imwrite(os.path.join(self.config.log_dir, 'validation',
-                                             '{}.jpg'.format(sample['filename'][0].replace('/{}/', '_').replace('{}', ''))), out_imgs[:, :, ::-1])
+                    # save temp results
+                    # images_dict = tensor2numpy(image_outputs)
+                    # std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))
+                    # mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))
+                    # images_dict['ref_img'][0] = images_dict['ref_img'][0] * std + mean
+                    # ref_img = cv2.resize(np.transpose(images_dict['ref_img'][0], axes=[1, 2, 0]), (320, 256))
+                    # out_imgs = [ref_img]
+                    # max_v, min_v = depth_values[0, -1].item(), depth_values[0, 0].item()
+                    # img_pred_depth = cv2.resize(normalize(images_dict['pred_depth'][0], max=max_v, min=min_v), (320, 256))
+                    # img_pred_depth = np.tile(img_pred_depth[:, :, None], [1, 1, 3])
+                    # img_gt_depth = cv2.resize(normalize(images_dict['gt_depth'][0], max=max_v, min=min_v), (320, 256))
+                    # img_gt_depth = np.tile(img_gt_depth[:, :, None], [1, 1, 3])
+                    # out_imgs.extend([img_pred_depth, img_gt_depth])
+                    #
+                    # stage_outputs = {}
+                    # for key in outputs:
+                    #     if 'stage' in key:
+                    #         stage_outputs['depth_' + key] = outputs[key]['depth']
+                    # stage_dict = tensor2numpy(stage_outputs)
+                    # ex_depths = []
+                    # for stage_key in stage_dict:
+                    #     img_pred_depth_ = cv2.resize(normalize(stage_dict[stage_key][0], max=max_v, min=min_v), (320, 256))
+                    #     img_pred_depth_ = np.tile(img_pred_depth_[:, :, None], [1, 1, 3])
+                    #     ex_depths.append(img_pred_depth_)
+                    # out_imgs.extend(ex_depths)
+                    #
+                    # out_imgs = np.concatenate(out_imgs, axis=1)
+                    # out_imgs = (out_imgs * 255).astype(np.uint8)
+                    # cv2.imwrite(os.path.join(self.config.log_dir, 'validation',
+                    #                          '{}.jpg'.format(sample['filename'][0].replace('/{}/', '_').replace('{}', ''))), out_imgs[:, :, ::-1])
                     self.valid_metrics.update(scalar_outputs)
 
-                save_images(self.writer, 'test', image_outputs, epoch)
+                if self.rank == 0:
+                    save_images(self.writer, 'test', image_outputs, epoch)
                 val_metrics = self.valid_metrics.mean()
                 val_metrics['mean_error'] = val_metrics['thres2mm_error'] + val_metrics['thres4mm_error'] + val_metrics['thres8mm_error'] + val_metrics['thres14mm_error']
                 val_metrics['mean_error'] = val_metrics['mean_error'] / 4.0

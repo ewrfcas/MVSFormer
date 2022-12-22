@@ -223,7 +223,7 @@ class Trainer(BaseTrainer):
         with torch.no_grad():
             for dl in self.valid_data_loader:
                 self.valid_metrics.reset()
-                for batch_idx, sample in enumerate(tqdm(dl)):  # self.valid_data_loader):
+                for batch_idx, sample in enumerate(tqdm(dl)):
                     sample_cuda = tocuda(sample)
                     depth_gt_ms = sample_cuda["depth"]
                     mask_ms = sample_cuda["mask"]

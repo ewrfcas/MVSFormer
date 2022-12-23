@@ -201,8 +201,6 @@ def save_depth(testlist, config):
     new_state_dict = {}
     for key, val in state_dict.items():
         new_state_dict[key.replace('module.', '')] = val
-    if config['n_gpu'] > 1:
-        model = torch.nn.DataParallel(model)
     model.load_state_dict(new_state_dict, strict=True)
 
     # prepare models for testing

@@ -5,7 +5,7 @@ Codes of MVSFormer: Multi-View Stereo by Learning Robust Image Features and Temp
 
 - [x] Releasing codes of training and testing
 - [x] Adding dynamic pointcloud fusion for T&T
-- [ ] Releasing pre-trained models
+- [x] Releasing pre-trained models
 
 ## Installation
 
@@ -113,7 +113,7 @@ CUDA_VISIBLE_DEVICES=0,1 python train.py --config configs/config_mvsformer_blend
 
 ## Test
 
-Our pretrained models will be released soon!
+Pretrained models: [OneDrive](https://1drv.ms/u/s!Ah2VkULmkiqPryH_Tl2PUS6Is831?e=BgCuOY)
 
 For testing on DTU:
 ```

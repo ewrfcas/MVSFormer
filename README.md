@@ -58,8 +58,9 @@ BlendedMVS_raw
 ```
 
 ### Tank-and-Temples (T&T)
-Download preprocessed [T&T](https://drive.google.com/file/d/1gAfmeoGNEFl9dL4QcAU4kF0BAyTd-r8Z/view).
-Note that users should use the short depth range of cameras Run the evaluation script to produce the point clouds.
+Download preprocessed [T&T](https://drive.google.com/file/d/1gAfmeoGNEFl9dL4QcAU4kF0BAyTd-r8Z/view) pre-processed by [MVSNet](https://github.com/YoYo000/MVSNet/issues/14).
+Note that users should use the short depth range of cameras, run the evaluation script to produce the point clouds.
+Remember to replace the cameras by those in `short_range_caemeras_for_mvsnet.zip` in the `intermediate` folder, which is available at [short_range_caemeras_for_mvsnet.zip](https://drive.google.com/file/d/1Nbsq3WEVSg9tppMjN6hYM_rzuALWnrIy/view?usp=sharing) 
 
 ```
 tankandtemples

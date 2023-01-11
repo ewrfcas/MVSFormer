@@ -24,7 +24,22 @@ cmake .
 make
 ```
 
-**Tips:** Your should revise CUDA_NVCC_FLAGS in CMakeLists.txt according the gpu device you used. We set ```-gencode arch=compute_70,code=sm_70``` instead of ```-gencode arch=compute_60,code=sm_60``` with V100 GPUs.
+**Tips:** You should revise CUDA_NVCC_FLAGS in CMakeLists.txt according the gpu device you used. 
+We set ```-gencode arch=compute_70,code=sm_70``` instead of ```-gencode arch=compute_60,code=sm_60``` with V100 GPUs.
+For other GPU types, you can follow
+```
+# 1080Ti
+-gencode arch=compute_60,code=sm_60
+
+# 2080Ti
+-gencode arch=compute_75,code=sm_75
+
+# 3090Ti
+-gencode arch=compute_86,code=sm_86
+
+# V100
+-gencode arch=compute_70,code=sm_70
+```
 
 ## Datasets
 

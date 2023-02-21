@@ -65,6 +65,10 @@ parser.add_argument('--thres_view', type=int, default=3, help='threshold of num 
 parser.add_argument('--thres_disp', type=float, default=1.0, help='threshold of disparity')
 parser.add_argument('--downsample', type=float, default=None, help='downsampling point cloud')
 
+## dpcd filter
+parser.add_argument('--dist_base', type=float, default=4.0 , help='threshold of disparity')
+parser.add_argument('--rel_diff_base', type=float, default=1300.0, help='downsampling point cloud')
+
 # filter by gimupa
 parser.add_argument('--fusibile_exe_path', type=str, default='./fusibile/fusibile')
 parser.add_argument('--prob_threshold', type=str, default='0.1,0.1,0.1,0.1')

@@ -148,7 +148,7 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset dtu --batch_size 1 \
 
 For testing on T&T, T&T uses dpcd, whose confidence is controled by ```conf``` rather than ```prob_threshold```.
 Sorry for the confused parameter names, which is the black history of this project.
-Note that we recommand to use ```num_view=20``` here, but you should build a new pair.txt with 20 views as MVSNet.
+Note that we recommend to use ```num_view=20``` here, but you should build a new pair.txt with 20 views as MVSNet.
 ```
 CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --testpath ${tt_test_path}/intermediate(or advanced) \

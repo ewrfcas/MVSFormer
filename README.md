@@ -146,14 +146,16 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset dtu --batch_size 1 \
                                        --tmps 5.0,5.0,5.0,1.0
 ```
 
-For testing on T&T
+For testing on T&T. T&T uses dpcd, whose confidence is controled by ```conf``` rather than ```prob_threshold```.
+Sorry for the confused parameter names, which is the black history of this project.
+Note that we recommand to use ```num_view=20``` here, but you should build a new pair.txt with 20 views as MVSNet.
 ```
 CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --testpath ${tt_test_path}/intermediate(or advanced) \
                                       --testlist ./lists/tanksandtemples/intermediate.txt(or advanced.txt)
                                       --resume ${MODEL_WEIGHT_PATH} \
                                       --outdir ${OUTPUT_DIR} \ 
-                                      --interval_scale 1.0 --num_view 20 --numdepth 256 \
+                                      --interval_scale 1.0 --num_view 10 --numdepth 256 \
                                       --max_h 1088 --max_w 1920 --filter_method dpcd \
                                       --conf 0.5,0.5,0.5,0.5 \
                                       --use_short_range --combine_conf --tmps 5.0,5.0,5.0,1.0

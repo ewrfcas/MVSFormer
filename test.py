@@ -66,7 +66,7 @@ parser.add_argument('--thres_disp', type=float, default=1.0, help='threshold of 
 parser.add_argument('--downsample', type=float, default=None, help='downsampling point cloud')
 
 ## dpcd filter
-parser.add_argument('--dist_base', type=float, default=4.0 , help='threshold of disparity')
+parser.add_argument('--dist_base', type=float, default=4.0, help='threshold of disparity')
 parser.add_argument('--rel_diff_base', type=float, default=1300.0, help='downsampling point cloud')
 
 # filter by gimupa
@@ -278,7 +278,7 @@ def save_depth(testlist, config):
                 # save confidence maps
                 if args.combine_conf:
                     photometric_confidence = conf_stage4
-                    if args.save_all_confs: # only for visualization
+                    if args.save_all_confs:  # only for visualization
                         all_confidence_filename = os.path.join(args.outdir, filename.format('confidence_all', '.npy'))
                         os.makedirs(all_confidence_filename.rsplit('/', 1)[0], exist_ok=True)
                         all_photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose([1, 2, 0])
@@ -430,7 +430,7 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
         idx_img = fusion.get_pixel_grids(*ref_depth_ave.size()[-2:]).unsqueeze(0)
         idx_cam = fusion.idx_img2cam(idx_img, ref_depth_ave, sample['ref_cam'])
         points = fusion.idx_cam2world(idx_cam, sample['ref_cam'])[..., :3, 0].permute(0, 3, 1, 2)
-       
+
         points_np = points.cpu().data.numpy()
         mask_np = mask.cpu().data.numpy().astype(np.bool)
         # dir_vecs = dir_vecs.cpu().data.numpy()
@@ -465,7 +465,6 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
     print("saving the final model to", plyfilename)
 
 
-
 def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
     tt_dataset = TTDataset(pair_folder, scan_folder, n_src_views=10)
     sampler = SequentialSampler(tt_dataset)
@@ -476,7 +475,7 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
     prob_threshold = [float(p) for p in prob_threshold.split(',')]
     for batch_idx, sample_np in enumerate(tt_dataloader):
         num_src_views = sample_np['src_depths'].shape[1]
-        dy_range = num_src_views + 1 # 10
+        dy_range = num_src_views + 1  # 10
         sample = tocuda(sample_np)
 
         if args.combine_conf:
@@ -484,8 +483,7 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
         else:
             prob_mask = fusion.prob_filter(sample['ref_conf'], prob_threshold)
 
-
-        ref_depth = sample['ref_depth'] # [n 1 h w ]
+        ref_depth = sample['ref_depth']  # [n 1 h w ]
         device = ref_depth.device
         reproj_xyd = fusion.get_reproj_dynamic(
             *[sample[attr] for attr in ['ref_depth', 'src_depths', 'ref_cam', 'src_cams']])
@@ -495,14 +493,14 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
                                                         rel_diff_base=args.rel_diff_base)
 
         # mask reproj_depth
-        reproj_depth = reproj_xyd[:,:,-1] # [1 v h w]
+        reproj_depth = reproj_xyd[:, :, -1]  # [1 v h w]
         reproj_depth[~vis_mask.squeeze(2)] = 0  # [n v h w ]
-        geo_mask_sums = vis_masks.sum(dim=1) # 0~v
+        geo_mask_sums = vis_masks.sum(dim=1)  # 0~v
         geo_mask_sum = vis_mask.sum(dim=1)
-        depth_est_averaged = (torch.sum(reproj_depth,dim=1,keepdim=True) + ref_depth) / (geo_mask_sum + 1)# [1,1,h,w]
+        depth_est_averaged = (torch.sum(reproj_depth, dim=1, keepdim=True) + ref_depth) / (geo_mask_sum + 1)  # [1,1,h,w]
         geo_mask = geo_mask_sum >= dy_range  # all zero
         for i in range(2, dy_range):
-            geo_mask = torch.logical_or(geo_mask, geo_mask_sums[:,i - 2]>=i)
+            geo_mask = torch.logical_or(geo_mask, geo_mask_sums[:, i - 2] >= i)
 
         mask = fusion.bin_op_reduce([prob_mask, geo_mask], torch.min)
         idx_img = fusion.get_pixel_grids(*depth_est_averaged.size()[-2:]).unsqueeze(0)
@@ -583,9 +581,9 @@ if __name__ == '__main__':
 
     # step2. filter saved depth maps with photometric confidence maps and geometric constraints
     if args.filter_method == "pcd" or args.filter_method == "dpcd":
-    # support multi-processing, the default number of worker is 4
-       pcd_filter(testlist)
-    
+        # support multi-processing, the default number of worker is 4
+        pcd_filter(testlist)
+
     elif args.filter_method == 'gipuma':
         prob_threshold = args.prob_threshold
         prob_threshold = [float(p) for p in prob_threshold.split(',')]

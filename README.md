@@ -161,4 +161,17 @@ CUDA_VISIBLE_DEVICES=0 python test.py --dataset tt --batch_size 1 \
                                       --use_short_range --combine_conf --tmps 5.0,5.0,5.0,1.0
 ```
 
+## Cite
+
+If you found our project helpful, please consider citing:
+
+```
+@article{caomvsformer,
+  title={MVSFormer: Multi-View Stereo by Learning Robust Image Features and Temperature-based Depth},
+  author={Cao, Chenjie and Ren, Xinlin and Fu, Yanwei},
+  journal={Transactions of Machine Learning Research},
+  year={2023}
+}
+```
+
 Our codes are partially based on [CDS-MVSNet](https://github.com/TruongKhang/cds-mvsnet), [DINO](https://github.com/facebookresearch/dino), and [Twins](https://github.com/Meituan-AutoML/Twins).

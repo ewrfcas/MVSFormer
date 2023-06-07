@@ -57,10 +57,11 @@ parser.add_argument('--temperature', type=float, default=0.01, help='temperature
 parser.add_argument('--num_worker', type=int, default=4, help='depth_filer worker')
 parser.add_argument('--save_freq', type=int, default=20, help='save freq of local pcd')
 
-parser.add_argument('--filter_method', type=str, default='gipuma', choices=["gipuma", "pcd", "dpcd"], help="filter method")
+parser.add_argument('--filter_method', type=str, default='gipuma', choices=["gipuma", "pcd", "dpcd"],
+                    help="filter method")
 
 # filter
-parser.add_argument('--conf', type=str, default='0.1,0.1,0.1,0.1', help='prob confidence')
+parser.add_argument('--prob_threshold', type=str, default='0.5,0.5,0.5,0.5', help='prob confidence')
 parser.add_argument('--thres_view', type=int, default=3, help='threshold of num view')
 parser.add_argument('--thres_disp', type=float, default=1.0, help='threshold of disparity')
 parser.add_argument('--downsample', type=float, default=None, help='downsampling point cloud')
@@ -71,7 +72,6 @@ parser.add_argument('--rel_diff_base', type=float, default=1300.0, help='downsam
 
 # filter by gimupa
 parser.add_argument('--fusibile_exe_path', type=str, default='./fusibile/fusibile')
-parser.add_argument('--prob_threshold', type=str, default='0.1,0.1,0.1,0.1')
 parser.add_argument('--disp_threshold', type=float, default='0.2')
 parser.add_argument('--num_consistent', type=float, default='3')
 
@@ -161,7 +161,8 @@ def write_cam(file, cam):
             f.write(str(cam[1][i][j]) + ' ')
         f.write('\n')
 
-    f.write('\n' + str(cam[1][3][0]) + ' ' + str(cam[1][3][1]) + ' ' + str(cam[1][3][2]) + ' ' + str(cam[1][3][3]) + '\n')
+    f.write(
+        '\n' + str(cam[1][3][0]) + ' ' + str(cam[1][3][1]) + ' ' + str(cam[1][3][2]) + ' ' + str(cam[1][3][3]) + '\n')
 
     f.close()
 
@@ -256,12 +257,13 @@ def save_depth(testlist, config):
                                                       outputs["refined_depth"][0].shape))
 
             # save depth maps and confidence maps
-            for filename, cam, img, depth_est, conf_stage1, conf_stage2, conf_stage3, conf_stage4, conf_stage4_ in zip(filenames, cams, imgs, outputs["refined_depth"],
-                                                                                                                       outputs["stage1"]["photometric_confidence"],
-                                                                                                                       outputs["stage2"]["photometric_confidence"],
-                                                                                                                       outputs["stage3"]["photometric_confidence"],
-                                                                                                                       outputs["photometric_confidence"],
-                                                                                                                       outputs["stage4"]["photometric_confidence"]):
+            for filename, cam, img, depth_est, conf_stage1, conf_stage2, conf_stage3, conf_stage4, conf_stage4_ in zip(
+                    filenames, cams, imgs, outputs["refined_depth"],
+                    outputs["stage1"]["photometric_confidence"],
+                    outputs["stage2"]["photometric_confidence"],
+                    outputs["stage3"]["photometric_confidence"],
+                    outputs["photometric_confidence"],
+                    outputs["stage4"]["photometric_confidence"]):
                 img = img[0]  # ref view
                 cam = cam[0]  # ref cam
                 depth_filename = os.path.join(args.outdir, filename.format('depth_est', '.pfm'))
@@ -281,13 +283,15 @@ def save_depth(testlist, config):
                     if args.save_all_confs:  # only for visualization
                         all_confidence_filename = os.path.join(args.outdir, filename.format('confidence_all', '.npy'))
                         os.makedirs(all_confidence_filename.rsplit('/', 1)[0], exist_ok=True)
-                        all_photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose([1, 2, 0])
+                        all_photometric_confidence = np.stack(
+                            [conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose([1, 2, 0])
                         np.save(all_confidence_filename, all_photometric_confidence)
                 else:
                     conf_stage1 = cv2.resize(conf_stage1, (w, h), interpolation=cv2.INTER_NEAREST)
                     conf_stage2 = cv2.resize(conf_stage2, (w, h), interpolation=cv2.INTER_NEAREST)
                     conf_stage3 = cv2.resize(conf_stage3, (w, h), interpolation=cv2.INTER_NEAREST)
-                    photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose([1, 2, 0])
+                    photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose(
+                        [1, 2, 0])
                 np.save(confidence_filename, photometric_confidence)
                 # save_pfm(confidence_filename, photometric_confidence)
                 # save cams, img
@@ -367,7 +371,8 @@ class TTDataset(Dataset):
         for ids in id_srcs:
             if not os.path.exists(os.path.join(self.scan_folder, 'cams/{:0>8}_cam.txt'.format(ids))):
                 continue
-            src_intrinsics, src_extrinsics = read_camera_parameters(os.path.join(self.scan_folder, 'cams/{:0>8}_cam.txt'.format(ids)))
+            src_intrinsics, src_extrinsics = read_camera_parameters(
+                os.path.join(self.scan_folder, 'cams/{:0>8}_cam.txt'.format(ids)))
             src_proj = np.zeros((2, 4, 4), dtype=np.float32)
             src_proj[0] = src_extrinsics
             src_proj[1, :3, :3] = src_intrinsics
@@ -404,7 +409,7 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
     tt_dataloader = DataLoader(tt_dataset, batch_size=1, shuffle=False, sampler=sampler, num_workers=2,
                                pin_memory=True, drop_last=False)
     views = {}
-    prob_threshold = args.conf
+    prob_threshold = args.prob_threshold
     prob_threshold = [float(p) for p in prob_threshold.split(',')]
     for batch_idx, sample_np in enumerate(tt_dataloader):
         sample = tocuda(sample_np)
@@ -420,8 +425,10 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
         else:
             prob_mask = fusion.prob_filter(sample['ref_conf'], prob_threshold)
 
-        reproj_xyd, in_range = fusion.get_reproj(*[sample[attr] for attr in ['ref_depth', 'src_depths', 'ref_cam', 'src_cams']])
-        vis_masks, vis_mask = fusion.vis_filter(sample['ref_depth'], reproj_xyd, in_range, args.thres_disp, 0.01, args.thres_view)
+        reproj_xyd, in_range = fusion.get_reproj(
+            *[sample[attr] for attr in ['ref_depth', 'src_depths', 'ref_cam', 'src_cams']])
+        vis_masks, vis_mask = fusion.vis_filter(sample['ref_depth'], reproj_xyd, in_range, args.thres_disp, 0.01,
+                                                args.thres_view)
 
         ref_depth_ave = fusion.ave_fusion(sample['ref_depth'], reproj_xyd, vis_masks)
 
@@ -445,8 +452,12 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
             # d_f = np.stack(d_f_list, -1)
             ref_id = str(sample_np['ref_id'][i].item())
             views[ref_id] = (p_f, c_f.astype(np.uint8))
-            print("processing {}, ref-view{:0>2}, photo/geo/final-mask:{}/{}/{}".format(scan_folder, int(ref_id), prob_mask[i].float().mean().item(),
-                                                                                        vis_mask[i].float().mean().item(), mask[i].float().mean().item()))
+            print("processing {}, ref-view{:0>2}, photo/geo/final-mask:{}/{}/{}".format(scan_folder, int(ref_id),
+                                                                                        prob_mask[
+                                                                                            i].float().mean().item(),
+                                                                                        vis_mask[
+                                                                                            i].float().mean().item(),
+                                                                                        mask[i].float().mean().item()))
 
     print('Write combined PCD')
     p_all, c_all = [np.concatenate([v[k] for key, v in views.items()], axis=0) for k in range(2)]
@@ -471,7 +482,7 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
     tt_dataloader = DataLoader(tt_dataset, batch_size=1, shuffle=False, sampler=sampler, num_workers=2,
                                pin_memory=True, drop_last=False)
     views = {}
-    prob_threshold = args.conf
+    prob_threshold = args.prob_threshold
     prob_threshold = [float(p) for p in prob_threshold.split(',')]
     for batch_idx, sample_np in enumerate(tt_dataloader):
         num_src_views = sample_np['src_depths'].shape[1]
@@ -489,7 +500,8 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
             *[sample[attr] for attr in ['ref_depth', 'src_depths', 'ref_cam', 'src_cams']])
         # reproj_xyd   nv 3 h w
 
-        vis_masks, vis_mask = fusion.vis_filter_dynamic(sample['ref_depth'], reproj_xyd, dist_base=args.dist_base,  # 4 1300
+        vis_masks, vis_mask = fusion.vis_filter_dynamic(sample['ref_depth'], reproj_xyd, dist_base=args.dist_base,
+                                                        # 4 1300
                                                         rel_diff_base=args.rel_diff_base)
 
         # mask reproj_depth
@@ -497,7 +509,8 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
         reproj_depth[~vis_mask.squeeze(2)] = 0  # [n v h w ]
         geo_mask_sums = vis_masks.sum(dim=1)  # 0~v
         geo_mask_sum = vis_mask.sum(dim=1)
-        depth_est_averaged = (torch.sum(reproj_depth, dim=1, keepdim=True) + ref_depth) / (geo_mask_sum + 1)  # [1,1,h,w]
+        depth_est_averaged = (torch.sum(reproj_depth, dim=1, keepdim=True) + ref_depth) / (
+                geo_mask_sum + 1)  # [1,1,h,w]
         geo_mask = geo_mask_sum >= dy_range  # all zero
         for i in range(2, dy_range):
             geo_mask = torch.logical_or(geo_mask, geo_mask_sums[:, i - 2] >= i)
@@ -521,10 +534,8 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
             ref_id = str(sample_np['ref_id'][i].item())
             views[ref_id] = (p_f, c_f.astype(np.uint8))
             print("processing {}, ref-view{:0>2}, photo/geo/final-mask:{}/{}/{}".format(scan_folder, int(ref_id),
-                                                                                        prob_mask[
-                                                                                            i].float().mean().item(),
-                                                                                        geo_mask[
-                                                                                            i].float().mean().item(),
+                                                                                        prob_mask[i].float().mean().item(),
+                                                                                        geo_mask[i].float().mean().item(),
                                                                                         mask[i].float().mean().item()))
 
     print('Write combined PCD')

@@ -257,13 +257,12 @@ def save_depth(testlist, config):
                                                       outputs["refined_depth"][0].shape))
 
             # save depth maps and confidence maps
-            for filename, cam, img, depth_est, conf_stage1, conf_stage2, conf_stage3, conf_stage4, conf_stage4_ in zip(
-                    filenames, cams, imgs, outputs["refined_depth"],
-                    outputs["stage1"]["photometric_confidence"],
-                    outputs["stage2"]["photometric_confidence"],
-                    outputs["stage3"]["photometric_confidence"],
-                    outputs["photometric_confidence"],
-                    outputs["stage4"]["photometric_confidence"]):
+            for filename, cam, img, depth_est, conf_stage1, conf_stage2, conf_stage3, conf_stage4, conf_stage4_ in zip(filenames, cams, imgs, outputs["refined_depth"],
+                                                                                                                       outputs["stage1"]["photometric_confidence"],
+                                                                                                                       outputs["stage2"]["photometric_confidence"],
+                                                                                                                       outputs["stage3"]["photometric_confidence"],
+                                                                                                                       outputs["photometric_confidence"],
+                                                                                                                       outputs["stage4"]["photometric_confidence"]):
                 img = img[0]  # ref view
                 cam = cam[0]  # ref cam
                 depth_filename = os.path.join(args.outdir, filename.format('depth_est', '.pfm'))
@@ -290,8 +289,7 @@ def save_depth(testlist, config):
                     conf_stage1 = cv2.resize(conf_stage1, (w, h), interpolation=cv2.INTER_NEAREST)
                     conf_stage2 = cv2.resize(conf_stage2, (w, h), interpolation=cv2.INTER_NEAREST)
                     conf_stage3 = cv2.resize(conf_stage3, (w, h), interpolation=cv2.INTER_NEAREST)
-                    photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose(
-                        [1, 2, 0])
+                    photometric_confidence = np.stack([conf_stage1, conf_stage2, conf_stage3, conf_stage4_]).transpose([1, 2, 0])
                 np.save(confidence_filename, photometric_confidence)
                 # save_pfm(confidence_filename, photometric_confidence)
                 # save cams, img
@@ -453,10 +451,8 @@ def filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
             ref_id = str(sample_np['ref_id'][i].item())
             views[ref_id] = (p_f, c_f.astype(np.uint8))
             print("processing {}, ref-view{:0>2}, photo/geo/final-mask:{}/{}/{}".format(scan_folder, int(ref_id),
-                                                                                        prob_mask[
-                                                                                            i].float().mean().item(),
-                                                                                        vis_mask[
-                                                                                            i].float().mean().item(),
+                                                                                        prob_mask[i].float().mean().item(),
+                                                                                        vis_mask[i].float().mean().item(),
                                                                                         mask[i].float().mean().item()))
 
     print('Write combined PCD')
@@ -500,17 +496,15 @@ def dynamic_filter_depth(pair_folder, scan_folder, out_folder, plyfilename):
             *[sample[attr] for attr in ['ref_depth', 'src_depths', 'ref_cam', 'src_cams']])
         # reproj_xyd   nv 3 h w
 
-        vis_masks, vis_mask = fusion.vis_filter_dynamic(sample['ref_depth'], reproj_xyd, dist_base=args.dist_base,
-                                                        # 4 1300
-                                                        rel_diff_base=args.rel_diff_base)
+        # 4 1300
+        vis_masks, vis_mask = fusion.vis_filter_dynamic(sample['ref_depth'], reproj_xyd, dist_base=args.dist_base, rel_diff_base=args.rel_diff_base)
 
         # mask reproj_depth
         reproj_depth = reproj_xyd[:, :, -1]  # [1 v h w]
         reproj_depth[~vis_mask.squeeze(2)] = 0  # [n v h w ]
         geo_mask_sums = vis_masks.sum(dim=1)  # 0~v
         geo_mask_sum = vis_mask.sum(dim=1)
-        depth_est_averaged = (torch.sum(reproj_depth, dim=1, keepdim=True) + ref_depth) / (
-                geo_mask_sum + 1)  # [1,1,h,w]
+        depth_est_averaged = (torch.sum(reproj_depth, dim=1, keepdim=True) + ref_depth) / (geo_mask_sum + 1)  # [1,1,h,w]
         geo_mask = geo_mask_sum >= dy_range  # all zero
         for i in range(2, dy_range):
             geo_mask = torch.logical_or(geo_mask, geo_mask_sums[:, i - 2] >= i)

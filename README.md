@@ -1,7 +1,7 @@
 # MVSFormer
 Codes of MVSFormer: Multi-View Stereo by Learning Robust Image Features and Temperature-based Depth (TMLR2023)
 
-[Arxiv Paper](https://arxiv.org/abs/2208.02541), [Project Page](https://maybelx.github.io/MVSFormer.github.io/)
+[Arxiv Paper](https://arxiv.org/abs/2208.02541) | [Project Page](https://maybelx.github.io/MVSFormer.github.io/)
 
 - [x] Releasing codes of training and testing
 - [x] Adding dynamic pointcloud fusion for T&T

@@ -260,6 +260,9 @@ class BlendedMVSDataset(Dataset):
         return cropped_image, cropped_depth, output_intrinsics, cropped_mask, offset_y, offset_x
 
     def __getitem__(self, idx):
+        cv2.ocl.setUseOpenCL(False)
+        cv2.setNumThreads(0)
+
         meta = self.metas[idx]
         # scan, light_idx, ref_view, src_views = meta
         scan, ref_view, src_views, scene_name = meta

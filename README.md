@@ -40,6 +40,7 @@ For other GPU types, you can follow
 # V100
 -gencode arch=compute_70,code=sm_70
 ```
+More compile relations could be found in [here](https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/).
 
 ## Datasets
 

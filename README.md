@@ -130,7 +130,7 @@ CUDA_VISIBLE_DEVICES=0,1 python train.py --config configs/config_mvsformer_blend
 
 ## Test
 
-Pretrained models: [OneDrive](https://1drv.ms/u/s!Ah2VkULmkiqPryH_Tl2PUS6Is831?e=BgCuOY)
+Pretrained models: [OneDrive](https://1drv.ms/u/s!Ah2VkULmkiqPryH_Tl2PUS6Is831?e=BgCuOY), [Tencent Drive](https://share.weiyun.com/FCvkLeAi)
 
 For testing on DTU:
 ```
